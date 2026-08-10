@@ -1,0 +1,19 @@
+# Waterborne Disease Early Warning System — dependencies
+#
+# IMPORTANT: scikit-learn is pinned to 1.6.1 because the saved model .pkl files
+# (models/*.pkl) were serialized with that exact version. Newer scikit-learn
+# releases (1.8+/1.9+) changed an internal ColumnTransformer class and will fail
+# to unpickle these files with:
+#   AttributeError: Can't get attribute '_RemainderColsList' on
+#   <module 'sklearn.compose._column_transformer'>
+# Do not upgrade scikit-learn unless you also re-save the models with the new version.
+
+streamlit==1.61.1
+pandas>=2.2,<3.1
+numpy>=1.26
+scikit-learn==1.6.1
+joblib>=1.4
+plotly>=6.0
+folium>=0.19
+streamlit-folium>=0.25
+fpdf2>=2.8
