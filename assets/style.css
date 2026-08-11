@@ -1,1 +1,468 @@
 
+/* =============================================================================
+   Waterborne Disease Early Warning System — visual identity
+   -----------------------------------------------------------------------------
+   Palette is deliberately anchored to the two accent colors already used inside
+   app.py's own Plotly charts (#0B4F6C deep teal-navy, #01A7C2 aqua) so the
+   hand-styled sections and the chart output always read as one system, not two.
+   No looping/continuous animation anywhere — only short (150ms) hover/focus
+   transitions, per the "no unnecessary animation" brief for a presentation build.
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --ews-navy: #0B4F6C;        /* primary — deep teal-navy (matches 14-day chart bars) */
+  --ews-navy-dark: #073349;
+  --ews-aqua: #01A7C2;        /* accent — aqua (matches 30-day chart bars) */
+  --ews-aqua-light: #E5F7FA;
+  --ews-bg: #F5F9FA;          /* app background — clinical off-white with a hint of aqua */
+  --ews-surface: #FFFFFF;
+  --ews-border: #E1EBEE;
+  --ews-text: #12313F;
+  --ews-text-muted: #5B7A87;
+
+  --ews-low-bg: #E9F6EA;
+  --ews-low-text: #1E7B34;
+  --ews-medium-bg: #FFF6DF;
+  --ews-medium-text: #A66A00;
+  --ews-high-bg: #FDEAEA;
+  --ews-high-text: #C22B2B;
+
+  --ews-radius: 12px;
+  --ews-radius-sm: 8px;
+  --ews-shadow: 0 1px 3px rgba(11, 79, 108, 0.08), 0 6px 18px rgba(11, 79, 108, 0.06);
+  --ews-shadow-hover: 0 2px 6px rgba(11, 79, 108, 0.10), 0 10px 24px rgba(11, 79, 108, 0.10);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+html, body, [class*="css"] {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ews-text);
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  color: var(--ews-navy-dark);
+  letter-spacing: -0.01em;
+}
+
+[data-testid="stAppViewContainer"], .main {
+  background: var(--ews-bg);
+}
+
+[data-testid="stHeader"] {
+  background: transparent;
+}
+
+a { color: var(--ews-aqua); }
+
+/* Visible keyboard focus (accessibility floor) */
+button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--ews-aqua) !important;
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Sidebar
+--------------------------------------------------------------------------- */
+[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, var(--ews-navy) 0%, var(--ews-navy-dark) 100%);
+}
+[data-testid="stSidebar"] * {
+  color: #EAF6F9 !important;
+}
+.sidebar-brand {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #FFFFFF !important;
+  padding: 0.35rem 0 0.9rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.14);
+  margin-bottom: 0.75rem;
+}
+[data-testid="stSidebar"] hr {
+  border-color: rgba(255,255,255,0.14);
+}
+/* Nav buttons: primary = active page, secondary = inactive page.
+   Kind-specific rules only (no generic .stButton rule) so specificity/order
+   can't accidentally cancel the active-vs-inactive distinction. */
+[data-testid="stSidebar"] .stButton button {
+  text-align: left;
+  justify-content: flex-start;
+  font-size: 0.86rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.15rem;
+}
+[data-testid="stSidebar"] button[kind="primary"] {
+  background: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+  color: var(--ews-navy) !important;
+  font-weight: 700 !important;
+}
+[data-testid="stSidebar"] button[kind="secondary"] {
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  color: #EAF6F9 !important;
+  font-weight: 500 !important;
+}
+[data-testid="stSidebar"] button[kind="secondary"]:hover {
+  background: rgba(255,255,255,0.16) !important;
+  border-color: rgba(255,255,255,0.4) !important;
+}
+[data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] small {
+  color: #9FC6D2 !important;
+  font-size: 0.72rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons (main content area)
+--------------------------------------------------------------------------- */
+.stButton button, .stFormSubmitButton button, .stDownloadButton button {
+  border-radius: var(--ews-radius-sm);
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  border: 1px solid var(--ews-border);
+}
+.stButton button:hover, .stFormSubmitButton button:hover, .stDownloadButton button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ews-shadow);
+}
+button[kind="primary"] {
+  background: var(--ews-navy) !important;
+  border-color: var(--ews-navy) !important;
+  color: #FFFFFF !important;
+}
+button[kind="primary"]:hover {
+  background: var(--ews-navy-dark) !important;
+}
+button[kind="secondary"] {
+  background: var(--ews-surface) !important;
+  border-color: var(--ews-aqua) !important;
+  color: var(--ews-navy) !important;
+}
+button[kind="secondary"]:hover {
+  background: var(--ews-aqua-light) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Hero — signature water-wave edge
+--------------------------------------------------------------------------- */
+.ews-hero {
+  position: relative;
+  background: linear-gradient(120deg, var(--ews-navy) 0%, var(--ews-aqua) 130%);
+  color: #FFFFFF;
+  padding: 2.6rem 2.4rem 3.4rem 2.4rem;
+  border-radius: var(--ews-radius);
+  margin-bottom: 1.6rem;
+  overflow: hidden;
+}
+.ews-hero h1 {
+  color: #FFFFFF;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  max-width: 46rem;
+}
+.ews-hero p {
+  color: #E4F5F9;
+  font-size: 1.02rem;
+  max-width: 40rem;
+  margin: 0;
+}
+.ews-hero::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0,20 C150,45 350,0 600,18 C850,36 1050,4 1200,20 L1200,40 L0,40 Z' fill='%23F5F9FA'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+}
+
+/* ---------------------------------------------------------------------------
+   Disclaimer banner
+--------------------------------------------------------------------------- */
+.ews-disclaimer {
+  background: var(--ews-medium-bg);
+  color: #7A4B00;
+  border: 1px solid #F0DFAF;
+  border-radius: var(--ews-radius-sm);
+  padding: 0.7rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Generic card
+--------------------------------------------------------------------------- */
+.ews-card {
+  background: var(--ews-surface);
+  border: 1px solid var(--ews-border);
+  border-radius: var(--ews-radius);
+  box-shadow: var(--ews-shadow);
+  padding: 1.35rem 1.4rem;
+  margin-bottom: 1rem;
+}
+.ews-eyebrow {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ews-aqua);
+  margin: 0.6rem 0 0.2rem 0;
+}
+.section-eyebrow {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ews-navy);
+  border-left: 3px solid var(--ews-aqua);
+  padding-left: 0.6rem;
+  margin: 1.6rem 0 0.9rem 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Home — overview / analyze cards (icon + title + desc)
+--------------------------------------------------------------------------- */
+.overview-card, .analyze-card, .quick-link-card {
+  text-align: left;
+  min-height: 148px;
+}
+.overview-icon, .analyze-icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.35rem;
+}
+.overview-title, .analyze-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--ews-navy-dark);
+  margin: 0 0 0.25rem 0;
+}
+.overview-desc, .analyze-desc {
+  font-size: 0.85rem;
+  color: var(--ews-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Quick-link card sits directly above its "Open →" button */
+.quick-link-card {
+  min-height: 128px;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------------------------------------------------------------------------
+   How it works — numbered steps (a genuine ordered sequence)
+--------------------------------------------------------------------------- */
+.step-card {
+  text-align: left;
+  border-top: 3px solid var(--ews-aqua);
+  min-height: 92px;
+}
+.step-num {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--ews-aqua);
+  margin: 0 0 0.2rem 0;
+}
+.step-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ews-navy-dark);
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* ---------------------------------------------------------------------------
+   Risk level cards + badges (shared with prediction pages)
+--------------------------------------------------------------------------- */
+.risk-badge {
+  display: inline-block;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+}
+.risk-badge.low { background: var(--ews-low-bg); color: var(--ews-low-text); }
+.risk-badge.medium { background: var(--ews-medium-bg); color: var(--ews-medium-text); }
+.risk-badge.high { background: var(--ews-high-bg); color: var(--ews-high-text); }
+
+.risk-level-card {
+  text-align: left;
+  border-left: 4px solid transparent;
+}
+.risk-level-card.low { border-left-color: var(--ews-low-text); }
+.risk-level-card.medium { border-left-color: var(--ews-medium-text); }
+.risk-level-card.high { border-left-color: var(--ews-high-text); }
+.risk-level-desc {
+  font-size: 0.87rem;
+  color: var(--ews-text-muted);
+  margin: 0.55rem 0 0 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Horizon cards (prediction output) + mini variant (Home comparison)
+--------------------------------------------------------------------------- */
+.horizon-card {
+  background: var(--ews-surface);
+  border: 1px solid var(--ews-border);
+  border-radius: var(--ews-radius);
+  box-shadow: var(--ews-shadow);
+  padding: 1.4rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.horizon-label {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  color: var(--ews-text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.2rem 0;
+}
+.horizon-pct {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 2.4rem;
+  color: var(--ews-navy);
+  margin: 0 0 0.4rem 0;
+  line-height: 1;
+}
+.horizon-mini-card {
+  text-align: left;
+  border-top: 3px solid var(--ews-navy);
+}
+.horizon-mini-label {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  color: var(--ews-navy);
+  font-size: 1.05rem;
+  margin: 0 0 0.2rem 0;
+}
+.horizon-mini-desc {
+  font-size: 0.87rem;
+  color: var(--ews-text-muted);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Recommendations list
+--------------------------------------------------------------------------- */
+.rec-list {
+  margin: 0.6rem 0 0 0;
+  padding-left: 1.2rem;
+}
+.rec-list li {
+  margin-bottom: 0.45rem;
+  line-height: 1.5;
+  color: var(--ews-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Empty state (Risk Analysis / Reports / Recommendations before first run)
+--------------------------------------------------------------------------- */
+.ews-empty-state {
+  text-align: center;
+  border: 1.5px dashed var(--ews-border);
+  box-shadow: none;
+  padding: 2.2rem 1.5rem;
+}
+.ews-empty-icon {
+  font-size: 2rem;
+  margin: 0 0 0.4rem 0;
+}
+.ews-empty-state h4 {
+  margin: 0 0 0.3rem 0;
+}
+.ews-empty-state p {
+  color: var(--ews-text-muted);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Dashboard
+--------------------------------------------------------------------------- */
+.dashboard-location {
+  color: var(--ews-text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 0.7rem 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Account / Logout
+--------------------------------------------------------------------------- */
+.account-card, .logout-card {
+  text-align: center;
+  padding: 2.4rem 1.5rem;
+  max-width: 28rem;
+  margin: 0 auto 1rem auto;
+}
+.account-avatar {
+  font-size: 2.4rem;
+  margin-bottom: 0.5rem;
+}
+.account-name {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--ews-navy-dark);
+  margin: 0 0 0.2rem 0;
+}
+.account-role, .account-meta {
+  color: var(--ews-text-muted);
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Metrics, forms, dataframe, expander — light polish
+--------------------------------------------------------------------------- */
+[data-testid="stMetric"] {
+  background: var(--ews-surface);
+  border: 1px solid var(--ews-border);
+  border-radius: var(--ews-radius-sm);
+  padding: 0.75rem 0.9rem;
+}
+[data-testid="stMetricValue"] {
+  color: var(--ews-navy);
+  font-family: 'Manrope', sans-serif;
+}
+
+.stForm {
+  background: var(--ews-surface);
+  border: 1px solid var(--ews-border);
+  border-radius: var(--ews-radius);
+  padding: 1.3rem 1.4rem 0.6rem 1.4rem;
+}
+
+.stDataFrame, [data-testid="stDataFrame"] {
+  border-radius: var(--ews-radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--ews-border);
+}
+
+.streamlit-expanderHeader, [data-testid="stExpander"] summary {
+  font-weight: 600;
+  color: var(--ews-navy);
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive
+--------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .ews-hero { padding: 1.8rem 1.4rem 2.6rem 1.4rem; }
+  .ews-hero h1 { font-size: 1.4rem; }
+  .horizon-pct { font-size: 1.9rem; }
+}
