@@ -1,0 +1,211 @@
+{
+  "14d": [
+    {
+      "model": "Dummy (stratified)",
+      "accuracy": 0.6174,
+      "balanced_accuracy": 0.5012,
+      "precision_macro": 0.5012,
+      "recall_macro": 0.5012,
+      "f1_macro": 0.5012,
+      "roc_auc": 0.5012,
+      "confusion_matrix": [
+        [
+          253,
+          89
+        ],
+        [
+          87,
+          31
+        ]
+      ],
+      "class_distribution_test": {
+        "0": 342,
+        "1": 118
+      }
+    },
+    {
+      "model": "RandomForest",
+      "accuracy": 0.9152,
+      "balanced_accuracy": 0.8653,
+      "precision_macro": 0.9065,
+      "recall_macro": 0.8653,
+      "f1_macro": 0.8831,
+      "roc_auc": 0.9636,
+      "confusion_matrix": [
+        [
+          331,
+          11
+        ],
+        [
+          28,
+          90
+        ]
+      ],
+      "class_distribution_test": {
+        "0": 342,
+        "1": 118
+      }
+    },
+    {
+      "model": "GradientBoosting",
+      "accuracy": 0.9174,
+      "balanced_accuracy": 0.8667,
+      "precision_macro": 0.9111,
+      "recall_macro": 0.8667,
+      "f1_macro": 0.8858,
+      "roc_auc": 0.9675,
+      "confusion_matrix": [
+        [
+          332,
+          10
+        ],
+        [
+          28,
+          90
+        ]
+      ],
+      "class_distribution_test": {
+        "0": 342,
+        "1": 118
+      }
+    }
+  ],
+  "30d": [
+    {
+      "model": "Dummy (stratified)",
+      "accuracy": 0.6826,
+      "balanced_accuracy": 0.5234,
+      "precision_macro": 0.523,
+      "recall_macro": 0.5234,
+      "f1_macro": 0.5232,
+      "roc_auc": 0.5234,
+      "confusion_matrix": [
+        [
+          290,
+          74
+        ],
+        [
+          72,
+          24
+        ]
+      ],
+      "class_distribution_test": {
+        "0": 364,
+        "1": 96
+      }
+    },
+    {
+      "model": "RandomForest",
+      "accuracy": 0.8761,
+      "balanced_accuracy": 0.7568,
+      "precision_macro": 0.8408,
+      "recall_macro": 0.7568,
+      "f1_macro": 0.7875,
+      "roc_auc": 0.9394,
+      "confusion_matrix": [
+        [
+          350,
+          14
+        ],
+        [
+          43,
+          53
+        ]
+      ],
+      "class_distribution_test": {
+        "0": 364,
+        "1": 96
+      }
+    },
+    {
+      "model": "GradientBoosting",
+      "accuracy": 0.8935,
+      "balanced_accuracy": 0.8215,
+      "precision_macro": 0.8462,
+      "recall_macro": 0.8215,
+      "f1_macro": 0.8329,
+      "roc_auc": 0.9532,
+      "confusion_matrix": [
+        [
+          344,
+          20
+        ],
+        [
+          29,
+          67
+        ]
+      ],
+      "class_distribution_test": {
+        "0": 364,
+        "1": 96
+      }
+    }
+  ],
+  "metadata": {
+    "best_14d": "GradientBoosting",
+    "best_30d": "GradientBoosting",
+    "train_rows": 1838,
+    "test_rows": 460,
+    "real_rows": 798,
+    "synthetic_rows": 1500,
+    "feature_count": 40,
+    "features": [
+      "latitude",
+      "longitude",
+      "is_urban",
+      "population_density",
+      "age",
+      "water_quality_index",
+      "ph",
+      "turbidity_ntu",
+      "dissolved_oxygen_mg_l",
+      "bod_mg_l",
+      "fecal_coliform_per_100ml",
+      "total_coliform_per_100ml",
+      "tds_mg_l",
+      "nitrate_mg_l",
+      "fluoride_mg_l",
+      "arsenic_ug_l",
+      "open_defecation_rate",
+      "toilet_access",
+      "sewage_treatment_pct",
+      "avg_temperature_c",
+      "avg_rainfall_mm",
+      "avg_humidity_pct",
+      "flooding",
+      "month_sin",
+      "month_cos",
+      "water_contamination_score",
+      "weather_risk_score",
+      "seasonal_risk_score",
+      "environmental_risk_score",
+      "sanitation_risk_score",
+      "location_risk_score",
+      "rain_flood_interaction",
+      "contamination_sanitation_interaction",
+      "composite_outbreak_risk_score",
+      "region",
+      "gender",
+      "water_source",
+      "water_treatment",
+      "handwashing_practice",
+      "season"
+    ],
+    "fast_onset_diseases": [
+      "Dysentery",
+      "Cholera",
+      "Leptospirosis"
+    ],
+    "slow_onset_diseases": [
+      "Hepatitis_A",
+      "Typhoid",
+      "Giardiasis",
+      "Hepatitis_E"
+    ],
+    "risk_thresholds": {
+      "low_boundary": 0.35,
+      "high_boundary": 0.65
+    },
+    "important_caveat": "Evaluation is against synthetic rule-generated labels only. This does NOT establish real-world disease-forecasting ability. Performance metrics reflect how well models learn the synthetic label-generation rules, not validated epidemiological outcomes."
+  }
+}

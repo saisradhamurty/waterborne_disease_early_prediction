@@ -78,9 +78,12 @@ NAV_PAGES = [
     "📊 Dashboard",
     "🔬 Risk Assessment",
     "🗺️ District Risk Map",
+    "💧 Water Quality (CGWB)",
+    "🦠 Surveillance Reports",
     "📈 Risk Analysis",
     "📋 Reports",
     "💡 Recommendations",
+    "🧪 Model Evaluation",
     "ℹ️ About",
 ]
 
@@ -900,6 +903,262 @@ elif page == "📋 Reports":
             mime="application/pdf",
             type="primary",
         )
+
+# ==============================================================================
+# PAGE — WATER QUALITY (CGWB Real Data)
+# ==============================================================================
+elif page == "💧 Water Quality (CGWB)":
+    render_hero(
+        "💧 Chhattisgarh Groundwater Quality",
+        "Real observed water-quality data from CGWB (Central Ground Water Board) "
+        "for Chhattisgarh, 1961–2025. Data origin: cgwb_observed.",
+    )
+    st.info(
+        "⚠️ **Data provenance**: This section shows REAL chemical-parameter measurements "
+        "from the CGWB database. These are groundwater (borewell/well) samples — NOT "
+        "treated drinking water from the distribution network. They are NOT directly "
+        "comparable to the training dataset's drinking-water parameters. "
+        "**IS:10500:2012** violation flags are shown for reference only."
+    )
+
+    @st.cache_data(show_spinner="Loading CGWB data …")
+    def _load_cgwb():
+        from src.data_loader import get_cgwb_chhattisgarh_summary, data_quality_report
+        return get_cgwb_chhattisgarh_summary(), data_quality_report()
+
+    cgwb_summary, dq_report = _load_cgwb()
+
+    if cgwb_summary.empty:
+        st.warning("CGWB data file not found in data/raw/. Place cgwb_cg_groundwater.csv there.")
+    else:
+        cgwb_info = dq_report.get("cgwb", {})
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total rows", f"{cgwb_info.get('rows', 0):,}")
+        c2.metric("Districts", cgwb_info.get("districts", 0))
+        c3.metric("Date range (from)", cgwb_info.get("date_min", "N/A")[:10])
+        c4.metric("Date range (to)", cgwb_info.get("date_max", "N/A")[:10])
+
+        st.markdown("### Parameter Missingness")
+        miss = cgwb_info.get("missingness_pct", {})
+        if miss:
+            miss_df = pd.DataFrame({"Parameter": list(miss.keys()), "Missing (%)": list(miss.values())})
+            fig_miss = px.bar(miss_df, x="Parameter", y="Missing (%)", title="Missing data % per key parameter",
+                              color="Missing (%)", color_continuous_scale="Reds")
+            fig_miss.update_layout(height=280, margin=dict(t=40, b=10))
+            st.plotly_chart(fig_miss, use_container_width=True)
+
+        st.markdown("### Parameter to Map")
+        param_options = {
+            "pH": "ph", "TDS (mg/L)": "tds_mg_l",
+            "Nitrate-N (mg/L)": "nitrate_n_mg_l", "Fluoride (mg/L)": "fluoride_mg_l",
+            "Iron (mg/L)": "iron_mg_l", "Total Hardness (mg/L)": "total_hardness_mg_l",
+        }
+        chosen_label = st.selectbox("Select parameter to visualise", list(param_options.keys()))
+        chosen_col = param_options[chosen_label]
+
+        from src.india_map import cgwb_water_quality_map
+        cgwb_map = cgwb_water_quality_map(cgwb_summary, parameter=chosen_col,
+                                          title=f"Chhattisgarh — {chosen_label}")
+        st_folium(cgwb_map, width=None, height=520, returned_objects=[])
+
+        st.caption(
+            "Red markers = IS:10500:2012 violation. Blue = within permissible limit. "
+            "Marker positions are district-centroid coordinates from CGWB records."
+        )
+
+        with st.expander("View raw CGWB district summary table"):
+            st.dataframe(cgwb_summary, use_container_width=True)
+
+        st.markdown("### IS:10500:2012 Reference Limits")
+        limits_df = pd.DataFrame([
+            {"Parameter": "pH", "Acceptable": "6.5–8.5", "Max Permissible": "6.5–8.5"},
+            {"Parameter": "TDS", "Acceptable": "500 mg/L", "Max Permissible": "2000 mg/L"},
+            {"Parameter": "Nitrate", "Acceptable": "45 mg/L", "Max Permissible": "45 mg/L"},
+            {"Parameter": "Fluoride", "Acceptable": "1.0 mg/L", "Max Permissible": "1.5 mg/L"},
+            {"Parameter": "Iron", "Acceptable": "0.3 mg/L", "Max Permissible": "1.0 mg/L"},
+            {"Parameter": "Arsenic", "Acceptable": "0.01 mg/L", "Max Permissible": "0.05 mg/L"},
+            {"Parameter": "Manganese", "Acceptable": "0.1 mg/L", "Max Permissible": "0.3 mg/L"},
+            {"Parameter": "Total Hardness", "Acceptable": "200 mg/L", "Max Permissible": "600 mg/L"},
+        ])
+        st.dataframe(limits_df, use_container_width=True, hide_index=True)
+
+# ==============================================================================
+# PAGE — SURVEILLANCE REPORTS (Synthetic)
+# ==============================================================================
+elif page == "🦠 Surveillance Reports":
+    render_hero(
+        "🦠 Disease Surveillance Reports",
+        "Synthetic academic disease scenarios for Bhilai–Durg, Chhattisgarh. "
+        "These are ILLUSTRATIVE ONLY — not confirmed outbreak data.",
+    )
+    st.warning(
+        "⚠️ **ALL DATA ON THIS PAGE IS SYNTHETIC (ACADEMIC DEMONSTRATION ONLY)**. "
+        "These reports were generated as academic scenarios to illustrate how the system "
+        "would work with real surveillance data. They do NOT establish actual outbreak events. "
+        "Source: project_REPORT_1.pdf (Synthetic academic dataset)."
+    )
+
+    from src.data_loader import load_synthetic_surveillance_reports
+    surv_df = load_synthetic_surveillance_reports()
+
+    # Summary cards
+    disease_col = st.columns(len(surv_df))
+    for col, (_, row) in zip(disease_col, surv_df.iterrows()):
+        risk = row.get("predicted_risk_category", "N/A")
+        color = {"High": "#C62828", "Medium": "#F9A825", "Low": "#2E7D32"}.get(risk, "#555")
+        col.markdown(
+            f'<div style="background:#f9f9f9;border-left:4px solid {color};'
+            f'padding:8px 12px;border-radius:4px;margin-bottom:8px">'
+            f'<b>{row["disease"]}</b><br>'
+            f'<span style="color:{color};font-weight:bold">{risk} Risk</span><br>'
+            f'<small>Suspected: {row.get("suspected_cases","?")} | '
+            f'Confirmed: {row.get("confirmed_cases","?")}</small></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("### Bhilai–Durg Surveillance Map (Synthetic Data)")
+    from src.india_map import durg_surveillance_map
+    surv_map = durg_surveillance_map(surv_df)
+    st_folium(surv_map, width=None, height=480, returned_objects=[])
+    st.caption(
+        "Marker positions are approximate district-centroid coordinates for Durg, Chhattisgarh. "
+        "Small offsets applied so overlapping markers are visible."
+    )
+
+    st.markdown("### Report Details")
+    for _, row in surv_df.iterrows():
+        with st.expander(f"📄 {row['report_id']} — {row['disease']} ({row.get('predicted_risk_category','?')} Risk)"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"**District:** {row.get('district')} | **State:** {row.get('state')}")
+                st.markdown(f"**Reporting period:** {row.get('reporting_period')}")
+                st.markdown(f"**Forecast horizon:** {row.get('forecast_horizon_days')} days")
+                st.markdown("**Water Quality Investigation:**")
+                wq_items = {
+                    "Turbidity (NTU)": row.get("turbidity_ntu"),
+                    "pH": row.get("ph"),
+                    "TDS (mg/L)": row.get("tds_mg_l"),
+                    "Fecal Coliform (MPN/100mL)": row.get("fecal_coliform_per_100ml"),
+                }
+                for k, v in wq_items.items():
+                    if pd.notna(v):
+                        st.markdown(f"  - {k}: **{v}**")
+            with col2:
+                st.markdown("**Disease Surveillance Summary:**")
+                st.markdown(f"  - Suspected cases: {row.get('suspected_cases')}")
+                st.markdown(f"  - Probable cases: {row.get('probable_cases')}")
+                st.markdown(f"  - Confirmed cases: {row.get('confirmed_cases')}")
+                st.markdown(f"  - Hospital admissions: {row.get('hospital_admissions')}")
+                st.markdown(f"  - Deaths: {row.get('deaths', 0)}")
+                st.markdown("**Environmental Factors:**")
+                env_items = {
+                    "Heavy rainfall": row.get("heavy_rainfall"),
+                    "Flooding": row.get("flooding"),
+                    "Water stagnation": row.get("water_stagnation"),
+                    "Sewage leakage": row.get("sewage_leakage"),
+                }
+                for k, v in env_items.items():
+                    if pd.notna(v):
+                        st.markdown(f"  - {k}: {'Yes' if v == 1 else 'No'}")
+            st.caption(f"⚠️ Data source: {row.get('data_source')} — Academic demonstration only.")
+
+# ==============================================================================
+# PAGE — MODEL EVALUATION
+# ==============================================================================
+elif page == "🧪 Model Evaluation":
+    render_hero(
+        "🧪 Model Evaluation & Limitations",
+        "Performance metrics, design decisions, and known limitations of the ML models.",
+    )
+    st.warning(
+        "⚠️ **IMPORTANT CAVEAT**: All evaluation metrics below are measured against "
+        "**synthetic rule-generated labels**, NOT against confirmed real-world outbreak data. "
+        "High scores reflect how well the model learned the label-generation rules — they do "
+        "NOT establish validated real-world disease-forecasting ability."
+    )
+
+    import json
+    from pathlib import Path
+    report_path = Path("reports/model_evaluation.json")
+    if not report_path.exists():
+        st.error("Evaluation report not found. Run `python -m src.train_models` to generate it.")
+    else:
+        with open(report_path) as f:
+            report = json.load(f)
+
+        meta = report.get("metadata", {})
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Training rows", f"{meta.get('train_rows', 0):,}")
+        m2.metric("Test rows", f"{meta.get('test_rows', 0):,}")
+        m3.metric("Real data rows", f"{meta.get('real_rows', 0):,}")
+        m4.metric("Synthetic data rows", f"{meta.get('synthetic_rows', 0):,}")
+
+        st.markdown(f"**Best 14-day model:** `{meta.get('best_14d', 'N/A')}`  "
+                    f"**Best 30-day model:** `{meta.get('best_30d', 'N/A')}`")
+        st.markdown(
+            f"**Risk thresholds:** Low < {meta.get('risk_thresholds', {}).get('low_boundary', 0.35)*100:.0f}%  |  "
+            f"High ≥ {meta.get('risk_thresholds', {}).get('high_boundary', 0.65)*100:.0f}%"
+        )
+
+        for horizon_key, horizon_label in [("14d", "14-Day"), ("30d", "30-Day")]:
+            st.markdown(f"### {horizon_label} Model Results")
+            evals = report.get(horizon_key, [])
+            if evals:
+                metrics_df = pd.DataFrame([
+                    {
+                        "Model": e["model"],
+                        "Accuracy": e["accuracy"],
+                        "Balanced Accuracy": e["balanced_accuracy"],
+                        "Precision (Macro)": e["precision_macro"],
+                        "Recall (Macro)": e["recall_macro"],
+                        "F1 (Macro)": e["f1_macro"],
+                        "ROC-AUC": e["roc_auc"],
+                    }
+                    for e in evals
+                ])
+                st.dataframe(
+                    metrics_df.style.highlight_max(
+                        subset=["Accuracy", "Balanced Accuracy", "F1 (Macro)", "ROC-AUC"],
+                        color="#d4edda"
+                    ),
+                    use_container_width=True, hide_index=True,
+                )
+
+                best = max(evals, key=lambda x: x["f1_macro"])
+                cm = best.get("confusion_matrix", [[0,0],[0,0]])
+                cm_df = pd.DataFrame(cm,
+                                     index=["Actual: No Risk", "Actual: Risk"],
+                                     columns=["Predicted: No Risk", "Predicted: Risk"])
+                st.markdown(f"**Confusion Matrix — {best['model']} (best)**")
+                st.dataframe(cm_df, use_container_width=True)
+
+        st.markdown("### Known Limitations")
+        limitations = [
+            "**Synthetic-only training**: Models learn the rule-based label-generation logic, not real epidemiological patterns.",
+            "**Cross-sectional data**: The training dataset is not a time-series — 14/30-day horizons are operationalised via disease incubation-period groupings.",
+            "**Missing microbiological data**: Fecal coliform, E. coli, and residual chlorine are absent from the CGWB groundwater dataset and are used only in the synthetic training data.",
+            "**No temporal leakage check**: Records are split by stratified random sampling (on disease), not by time, because no reliable observation dates are available.",
+            "**Risk thresholds**: The 35%/65% thresholds are defaults — production use requires calibration with domain experts.",
+            "**CGWB data incompatibility**: CGWB groundwater samples and training-dataset drinking-water samples cannot be directly merged without verified sample-date and measurement-method alignment.",
+            "**Model explainability**: SHAP values are not yet implemented; feature importance is from the trained tree's Gini-based scores only.",
+        ]
+        for lim in limitations:
+            st.markdown(f"- {lim}")
+
+        st.markdown("### Feature Dictionary (40 model features)")
+        feat_dict = [
+            {"Feature": "latitude / longitude", "Source": "Training dataset", "Unit": "decimal degrees", "Note": "Location context only"},
+            {"Feature": "ph", "Source": "Water quality", "Unit": "pH units", "Note": "IS:10500: 6.5–8.5"},
+            {"Feature": "turbidity_ntu", "Source": "Water quality", "Unit": "NTU", "Note": "IS:10500: ≤1 NTU"},
+            {"Feature": "fecal_coliform_per_100ml", "Source": "Training dataset (synthetic)", "Unit": "MPN/100mL", "Note": "Key cholera/dysentery driver"},
+            {"Feature": "tds_mg_l", "Source": "Water quality", "Unit": "mg/L", "Note": "IS:10500: ≤500 acceptable"},
+            {"Feature": "nitrate_mg_l", "Source": "Water quality", "Unit": "mg/L", "Note": "IS:10500: ≤45 mg/L"},
+            {"Feature": "water_contamination_score", "Source": "Engineered", "Unit": "0–100", "Note": "Weighted composite of 8 WQ params"},
+            {"Feature": "environmental_risk_score", "Source": "Engineered", "Unit": "0–100", "Note": "Weather risk + seasonal risk"},
+            {"Feature": "sanitation_risk_score", "Source": "Engineered", "Unit": "0–100", "Note": "Open defecation, toilet, sewage, handwashing"},
+            {"Feature": "composite_outbreak_risk_score", "Source": "Engineered", "Unit": "0–100", "Note": "Master risk summary"},
+        ]
+        st.dataframe(pd.DataFrame(feat_dict), use_container_width=True, hide_index=True)
 
 # ==============================================================================
 # PAGE — RECOMMENDATIONS

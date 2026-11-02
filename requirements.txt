@@ -17,3 +17,7 @@ plotly>=6.0
 folium>=0.19
 streamlit-folium>=0.25
 fpdf2>=2.8
+
+# Added for src/ modules (preprocessing pipeline, data loader, maps, training)
+openpyxl>=3.1          # xlsx read/write (pandas optional dep, needed for .xlsx exports)
+pyarrow>=15.0          # fast parquet I/O for processed datasets (optional but recommended)
