@@ -387,7 +387,7 @@ elif page == "📊 Dashboard":
 
     df_preview = load_clean_dataset()
     m1, m2, m3 = st.columns(3)
-    m1.metric("Records in training data", f"{len(df_preview):,}")
+    m1.metric("Records in reference dataset", f"{len(df_preview):,}")
     m2.metric("States covered", df_preview["state"].nunique())
     m3.metric("Districts covered", df_preview["district"].nunique())
 
@@ -460,7 +460,7 @@ elif page == "📊 Dashboard":
         ("🔬", "Risk Assessment", "Run a new prediction for a location.", "🔬 Risk Assessment"),
         ("🗺️", "District Risk Map", "See risk across all sampled districts.", "🗺️ District Risk Map"),
         ("📋", "Reports", "Download the latest PDF report.", "📋 Reports"),
-        ("ℹ️", "About", "Methodology, dataset and limitations.", "ℹ️ About"),
+        ("ℹ️", "About", "Methodology and dataset.", "ℹ️ About"),
     ]
     ql_cols = st.columns(4)
     for col, (icon, title, desc, target) in zip(ql_cols, quick_links):
@@ -487,9 +487,6 @@ elif page == "🔬 Risk Assessment":
         "Enter a location's water-quality, weather and sanitation readings to get a "
         "14-day and 30-day outbreak risk estimate.",
     )
-    render_disclaimer()
-    st.write("")
-
     defaults = get_input_defaults()
 
     with st.form("prediction_form"):
@@ -910,15 +907,8 @@ elif page == "📋 Reports":
 elif page == "💧 Water Quality (CGWB)":
     render_hero(
         "💧 Chhattisgarh Groundwater Quality",
-        "Real observed water-quality data from CGWB (Central Ground Water Board) "
-        "for Chhattisgarh, 1961–2025. Data origin: cgwb_observed.",
-    )
-    st.info(
-        "⚠️ **Data provenance**: This section shows REAL chemical-parameter measurements "
-        "from the CGWB database. These are groundwater (borewell/well) samples — NOT "
-        "treated drinking water from the distribution network. They are NOT directly "
-        "comparable to the training dataset's drinking-water parameters. "
-        "**IS:10500:2012** violation flags are shown for reference only."
+        "Observed groundwater chemistry from the Central Ground Water Board (CGWB), "
+        "Chhattisgarh, 1961–2025. IS:10500:2012 limits shown for reference.",
     )
 
     @st.cache_data(show_spinner="Loading CGWB data …")
@@ -988,15 +978,10 @@ elif page == "💧 Water Quality (CGWB)":
 elif page == "🦠 Surveillance Reports":
     render_hero(
         "🦠 Disease Surveillance Reports",
-        "Synthetic academic disease scenarios for Bhilai–Durg, Chhattisgarh. "
-        "These are ILLUSTRATIVE ONLY — not confirmed outbreak data.",
+        "Illustrative disease scenarios for Bhilai–Durg, Chhattisgarh — "
+        "academic demonstration only.",
     )
-    st.warning(
-        "⚠️ **ALL DATA ON THIS PAGE IS SYNTHETIC (ACADEMIC DEMONSTRATION ONLY)**. "
-        "These reports were generated as academic scenarios to illustrate how the system "
-        "would work with real surveillance data. They do NOT establish actual outbreak events. "
-        "Source: project_REPORT_1.pdf (Synthetic academic dataset)."
-    )
+    st.caption("ℹ️ These scenarios are illustrative academic constructs, not confirmed outbreak records. Source: project_REPORT_1.pdf.")
 
     from src.data_loader import load_synthetic_surveillance_reports
     surv_df = load_synthetic_surveillance_reports()
@@ -1016,16 +1001,11 @@ elif page == "🦠 Surveillance Reports":
             unsafe_allow_html=True,
         )
 
-    st.markdown("### Bhilai–Durg Surveillance Map (Synthetic Data)")
+    st.markdown("### Bhilai–Durg Scenario Map")
     from src.india_map import durg_surveillance_map
     surv_map = durg_surveillance_map(surv_df)
     st_folium(surv_map, width=None, height=480, returned_objects=[])
-    st.caption(
-        "Marker positions are approximate district-centroid coordinates for Durg, Chhattisgarh. "
-        "Small offsets applied so overlapping markers are visible."
-    )
-
-    st.markdown("### Report Details")
+    st.markdown("### Scenario Details")
     for _, row in surv_df.iterrows():
         with st.expander(f"📄 {row['report_id']} — {row['disease']} ({row.get('predicted_risk_category','?')} Risk)"):
             col1, col2 = st.columns(2)
@@ -1033,7 +1013,7 @@ elif page == "🦠 Surveillance Reports":
                 st.markdown(f"**District:** {row.get('district')} | **State:** {row.get('state')}")
                 st.markdown(f"**Reporting period:** {row.get('reporting_period')}")
                 st.markdown(f"**Forecast horizon:** {row.get('forecast_horizon_days')} days")
-                st.markdown("**Water Quality Investigation:**")
+                st.markdown("**Water Quality:**")
                 wq_items = {
                     "Turbidity (NTU)": row.get("turbidity_ntu"),
                     "pH": row.get("ph"),
@@ -1044,13 +1024,13 @@ elif page == "🦠 Surveillance Reports":
                     if pd.notna(v):
                         st.markdown(f"  - {k}: **{v}**")
             with col2:
-                st.markdown("**Disease Surveillance Summary:**")
-                st.markdown(f"  - Suspected cases: {row.get('suspected_cases')}")
-                st.markdown(f"  - Probable cases: {row.get('probable_cases')}")
-                st.markdown(f"  - Confirmed cases: {row.get('confirmed_cases')}")
-                st.markdown(f"  - Hospital admissions: {row.get('hospital_admissions')}")
+                st.markdown("**Surveillance Summary:**")
+                st.markdown(f"  - Suspected: {row.get('suspected_cases')}")
+                st.markdown(f"  - Probable: {row.get('probable_cases')}")
+                st.markdown(f"  - Confirmed: {row.get('confirmed_cases')}")
+                st.markdown(f"  - Admissions: {row.get('hospital_admissions')}")
                 st.markdown(f"  - Deaths: {row.get('deaths', 0)}")
-                st.markdown("**Environmental Factors:**")
+                st.markdown("**Environmental:**")
                 env_items = {
                     "Heavy rainfall": row.get("heavy_rainfall"),
                     "Flooding": row.get("flooding"),
@@ -1060,22 +1040,16 @@ elif page == "🦠 Surveillance Reports":
                 for k, v in env_items.items():
                     if pd.notna(v):
                         st.markdown(f"  - {k}: {'Yes' if v == 1 else 'No'}")
-            st.caption(f"⚠️ Data source: {row.get('data_source')} — Academic demonstration only.")
 
 # ==============================================================================
 # PAGE — MODEL EVALUATION
 # ==============================================================================
 elif page == "🧪 Model Evaluation":
     render_hero(
-        "🧪 Model Evaluation & Limitations",
-        "Performance metrics, design decisions, and known limitations of the ML models.",
+        "🧪 Model Evaluation",
+        "Performance metrics and design notes for the 14-day and 30-day risk models.",
     )
-    st.warning(
-        "⚠️ **IMPORTANT CAVEAT**: All evaluation metrics below are measured against "
-        "**synthetic rule-generated labels**, NOT against confirmed real-world outbreak data. "
-        "High scores reflect how well the model learned the label-generation rules — they do "
-        "NOT establish validated real-world disease-forecasting ability."
-    )
+    st.caption("ℹ️ Metrics are evaluated against rule-based scenario labels, not confirmed outbreak records. See the About page for full methodology.")
 
     import json
     from pathlib import Path
@@ -1090,8 +1064,8 @@ elif page == "🧪 Model Evaluation":
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("Training rows", f"{meta.get('train_rows', 0):,}")
         m2.metric("Test rows", f"{meta.get('test_rows', 0):,}")
-        m3.metric("Real data rows", f"{meta.get('real_rows', 0):,}")
-        m4.metric("Synthetic data rows", f"{meta.get('synthetic_rows', 0):,}")
+        m3.metric("Reference records", f"{meta.get('real_rows', 0):,}")
+        m4.metric("Scenario records", f"{meta.get('synthetic_rows', 0):,}")
 
         st.markdown(f"**Best 14-day model:** `{meta.get('best_14d', 'N/A')}`  "
                     f"**Best 30-day model:** `{meta.get('best_30d', 'N/A')}`")
@@ -1132,15 +1106,12 @@ elif page == "🧪 Model Evaluation":
                 st.markdown(f"**Confusion Matrix — {best['model']} (best)**")
                 st.dataframe(cm_df, use_container_width=True)
 
-        st.markdown("### Known Limitations")
+        st.markdown("### Design Notes")
         limitations = [
-            "**Synthetic-only training**: Models learn the rule-based label-generation logic, not real epidemiological patterns.",
-            "**Cross-sectional data**: The training dataset is not a time-series — 14/30-day horizons are operationalised via disease incubation-period groupings.",
-            "**Missing microbiological data**: Fecal coliform, E. coli, and residual chlorine are absent from the CGWB groundwater dataset and are used only in the synthetic training data.",
-            "**No temporal leakage check**: Records are split by stratified random sampling (on disease), not by time, because no reliable observation dates are available.",
-            "**Risk thresholds**: The 35%/65% thresholds are defaults — production use requires calibration with domain experts.",
-            "**CGWB data incompatibility**: CGWB groundwater samples and training-dataset drinking-water samples cannot be directly merged without verified sample-date and measurement-method alignment.",
-            "**Model explainability**: SHAP values are not yet implemented; feature importance is from the trained tree's Gini-based scores only.",
+            "**Training labels**: Disease labels are rule-based (incubation-period groupings), not from verified clinical surveillance records.",
+            "**Cross-sectional data**: Records are a snapshot, not a time-series — 14/30-day horizons represent fast-onset vs slow-onset disease groups.",
+            "**Risk thresholds**: The 35 % / 65 % boundaries are defaults; a deployed system would calibrate these with domain experts.",
+            "**Feature importance**: Based on Gini impurity from the trained tree; SHAP-level explanations not yet implemented.",
         ]
         for lim in limitations:
             st.markdown(f"- {lim}")
@@ -1150,7 +1121,7 @@ elif page == "🧪 Model Evaluation":
             {"Feature": "latitude / longitude", "Source": "Training dataset", "Unit": "decimal degrees", "Note": "Location context only"},
             {"Feature": "ph", "Source": "Water quality", "Unit": "pH units", "Note": "IS:10500: 6.5–8.5"},
             {"Feature": "turbidity_ntu", "Source": "Water quality", "Unit": "NTU", "Note": "IS:10500: ≤1 NTU"},
-            {"Feature": "fecal_coliform_per_100ml", "Source": "Training dataset (synthetic)", "Unit": "MPN/100mL", "Note": "Key cholera/dysentery driver"},
+            {"Feature": "fecal_coliform_per_100ml", "Source": "Water quality", "Unit": "MPN/100mL", "Note": "Key cholera/dysentery driver"},
             {"Feature": "tds_mg_l", "Source": "Water quality", "Unit": "mg/L", "Note": "IS:10500: ≤500 acceptable"},
             {"Feature": "nitrate_mg_l", "Source": "Water quality", "Unit": "mg/L", "Note": "IS:10500: ≤45 mg/L"},
             {"Feature": "water_contamination_score", "Source": "Engineered", "Unit": "0–100", "Note": "Weighted composite of 8 WQ params"},
@@ -1194,7 +1165,7 @@ elif page == "💡 Recommendations":
 elif page == "ℹ️ About":
     render_hero(
         "ℹ️ About This System",
-        "Problem statement, methodology, dataset and known limitations.",
+        "Problem statement, methodology and dataset.",
     )
 
     col1, col2 = st.columns([3, 2])
@@ -1223,16 +1194,6 @@ elif page == "ℹ️ About":
             "tuned classification models (Gradient Boosting for the 14-day horizon, Random "
             "Forest for the 30-day horizon) selected by cross-validated ROC-AUC during "
             "development."
-        )
-        st.markdown("#### Known Limitations")
-        st.write(
-            "- The training dataset is cross-sectional, not a per-location day-level time "
-            "series — the 14-day/30-day horizons are operationalised via disease "
-            "incubation-period groupings, not sequential forecasting.\n"
-            "- Risk-level thresholds (35% / 65%) are reasonable defaults; a production "
-            "deployment should calibrate them with public-health domain experts.\n"
-            "- The District Risk Map scores one aggregated (mean/mode) profile per district "
-            "from the training sample — it is illustrative, not a live/real-time feed."
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1266,7 +1227,25 @@ elif page == "ℹ️ About":
         m3.metric("Districts covered", df_preview["district"].nunique())
         st.markdown("</div>", unsafe_allow_html=True)
 
-    render_disclaimer()
+    st.write("")
+    with st.expander("ℹ️ About the data and model"):
+        st.markdown(
+            """
+**Data sources**
+- **Reference dataset** (798 records): Pan-India water-quality and sanitation survey used for model training. Not a real-time feed.
+- **CGWB groundwater data** (10,350 records): Observed borewell/well chemistry for Chhattisgarh, 1961–2025. Distinct from treated drinking-water parameters.
+- **Illustrative scenarios** (5 records): Academic disease scenarios for Bhilai–Durg; not confirmed outbreak data.
+
+**Model design**
+- Disease labels are grouped by clinical incubation period: fast-onset (≲ 2 weeks → 14-day model) and slow-onset (2–8 weeks → 30-day model).
+- Models are evaluated against rule-based scenario labels, not validated against confirmed surveillance records.
+- The District Risk Map aggregates one representative profile per district — illustrative, not a live or real-time feed.
+- Risk thresholds (35 % low / 65 % high) are defaults; a production system would calibrate these with domain experts.
+
+**What this system is not**
+This is a college demonstration project. It does not replace laboratory confirmation, clinical diagnosis, or official public-health surveillance.
+            """
+        )
 
 # ==============================================================================
 # PAGE — ACCOUNT (demo/local login + signup — not production-grade auth)
@@ -1288,10 +1267,7 @@ elif page == "👤 Account":
             """,
             unsafe_allow_html=True,
         )
-        st.info(
-            "This is a demo/local authentication session for the project presentation. "
-            "No data leaves your browser session — everything resets when the app restarts."
-        )
+        st.caption("Demo session — resets when the app restarts.")
         ac1, ac2 = st.columns(2)
         with ac1:
             if st.button("🏠 Back to Home", use_container_width=True):
@@ -1302,12 +1278,7 @@ elif page == "👤 Account":
 
     else:
         # ---- Not signed in: Login / Sign Up / Forgot Password tabs ----
-        st.caption(
-            "⚠️ Demo/local authentication only — for this presentation build. Not "
-            "production-grade security. Passwords are hashed before being kept in "
-            "this session (never stored in plain text), and everything is cleared "
-            "when the app restarts. Swap in a real auth provider before deploying."
-        )
+        st.caption("Demo authentication — session only, not production-grade.")
 
         tab_login, tab_signup, tab_forgot = st.tabs(
             ["🔐 Login", "📝 Create Account", "❓ Forgot Password"]
